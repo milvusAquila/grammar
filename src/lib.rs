@@ -9,7 +9,7 @@ pub mod german;
 // pub use french;
 // pub use german;
 
-#[derive(Debug,Default)]
+#[derive(Debug,Default, Clone)]
 pub struct Entry(pub Word, pub Word, pub GramClass);
 
 impl Entry {
