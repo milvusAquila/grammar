@@ -1,3 +1,5 @@
+use json::{self, JsonValue};
+
 pub mod word;
 pub use word::*;
 pub mod english;
@@ -7,7 +9,7 @@ pub mod german;
 // pub use french;
 // pub use german;
 
-#[derive(Debug)]
+#[derive(Debug,Default)]
 pub struct Entry(pub Word, pub Word, pub GramClass);
 
 impl Entry {
@@ -98,6 +100,42 @@ impl std::fmt::Display for Lang {
         value.into()
     }
 } */
+
+pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), json::Error> {
+    match json::parse(raw.as_str()) {
+        Ok(data) if data["lang"].len() == 2 && data["list"].is_array() => {
+            let lang1: Lang = data["lang"][0].as_str().unwrap_or("").into();
+            let lang2: Lang = data["lang"][1].as_str().unwrap_or("").into();
+
+            let mut list = Vec::new();
+            if let JsonValue::Array(unparsed_list) = &data["list"] {
+                for unparsed_entry in unparsed_list {
+                    if !unparsed_entry[2].is_string() {
+                        return Err(json::Error::UnexpectedEndOfJson);
+                    }
+                    let mut entry = Entry::default();
+                    match &unparsed_entry[0] {
+                        JsonValue::String(word) => entry.0 = Word::new(word),
+                        JsonValue::Array(unparsed_words) => todo!(),
+                        _ => return Err(json::Error::UnexpectedEndOfJson),
+                    }
+                    match &unparsed_entry[1] {
+                        JsonValue::String(word) => entry.1 = Word::new(word),
+                        JsonValue::Array(unparsed_words) => todo!(),
+                        _ => return Err(json::Error::UnexpectedEndOfJson),
+                    }
+                    match &unparsed_entry[2] {
+                        JsonValue::String(gram_class) => entry.2 = gram_class.into(),
+                        _ => return Err(json::Error::UnexpectedEndOfJson),
+                    }
+                }
+            }
+            Ok(([lang1, lang2], list))
+        }
+        Err(err) => Err(err),
+        _ => Err(json::Error::UnexpectedEndOfJson),
+    }
+}
 
 #[cfg(test)]
 mod tests {
