@@ -9,7 +9,7 @@ pub mod german;
 // pub use french;
 // pub use german;
 
-#[derive(Debug,Default, Clone)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Entry(pub Word, pub Word, pub GramClass);
 
 impl Entry {
@@ -53,7 +53,7 @@ impl Entry {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Lang {
     English,
     French,
@@ -116,18 +116,25 @@ pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), json::Error> {
                     let mut entry = Entry::default();
                     match &unparsed_entry[0] {
                         JsonValue::String(word) => entry.0 = Word::new(word),
+                        JsonValue::Short(word) => entry.0 = Word::new(word.as_str()),
                         JsonValue::Array(unparsed_words) => todo!(),
                         _ => return Err(json::Error::UnexpectedEndOfJson),
+                        // _ => entry.0 = Word::default(),
                     }
                     match &unparsed_entry[1] {
                         JsonValue::String(word) => entry.1 = Word::new(word),
+                        JsonValue::Short(word) => entry.1 = Word::new(word.as_str()),
                         JsonValue::Array(unparsed_words) => todo!(),
                         _ => return Err(json::Error::UnexpectedEndOfJson),
+                        // _ => entry.1 = Word::default(),
                     }
                     match &unparsed_entry[2] {
                         JsonValue::String(gram_class) => entry.2 = gram_class.into(),
+                        JsonValue::Short(gram_class) => entry.2 = gram_class.as_str().into(),
                         _ => return Err(json::Error::UnexpectedEndOfJson),
+                        // _ => entry.2 = GramClass::default(),
                     }
+                    list.push(entry);
                 }
             }
             Ok(([lang1, lang2], list))
@@ -142,12 +149,42 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn entry_test() {
         let entry = Entry(
             Word::new("the solution"),
             Word::new("la solution"),
             GramClass::Noun,
         );
         assert_eq!(entry.correct(&String::from("the solution")), 1.0);
+    }
+    #[test]
+    fn parse_test() {
+        let raw = String::from(
+            "{
+    \"lang\": [\"english\", \"french\"],
+    \"list\": [
+            [\"beauty\", \"beauté\", \"noun\"],
+            [\"fashion\", \"mode\", \"noun\"]
+    ]
+} ",
+        );
+        // println!("{}", raw);
+        let parsed = parse(&raw).unwrap();
+        let truth = (
+            [Lang::English, Lang::French],
+            vec![
+                Entry(
+                    Word::One("beauty".into()),
+                    Word::One("beauté".into()),
+                    GramClass::Noun,
+                ),
+                Entry(
+                    Word::One("fashion".into()),
+                    Word::One("mode".into()),
+                    GramClass::Noun,
+                ),
+            ],
+        );
+        assert_eq!(parsed, truth);
     }
 }

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Word {
     One(String),
     List(Vec<String>),
@@ -39,7 +39,7 @@ impl Into<Word> for Vec<String> {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub enum GramClass {
     Adverb,
     Noun,
