@@ -35,7 +35,6 @@ impl Entry {
         // TODO: add some grammar tolerences (`to` or not before verb)
         match &self.0 {
             Word::One(word) => {
-                println!("{}={}", &word, &answer);
                 if word == answer {
                     1.
                 } else {
@@ -117,22 +116,43 @@ pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), json::Error> {
                     match &unparsed_entry[0] {
                         JsonValue::String(word) => entry.0 = Word::new(word),
                         JsonValue::Short(word) => entry.0 = Word::new(word.as_str()),
-                        JsonValue::Array(unparsed_words) => todo!(),
+                        JsonValue::Array(unparsed_words) => {
+                            let mut words = Vec::new();
+                            for unparsed_work in unparsed_words {
+                                match unparsed_work {
+                                    JsonValue::String(word) => words.push(word.as_str()),
+                                    JsonValue::Short(word) => words.push(word.as_str()),
+                                    _ => return Err(json::Error::UnexpectedEndOfJson),
+                                }
+                            }
+                            let words: Vec<String> =
+                                words.iter().map(|word| (*word).to_string()).collect();
+                            entry.0 = Word::new_list(words);
+                        }
                         _ => return Err(json::Error::UnexpectedEndOfJson),
-                        // _ => entry.0 = Word::default(),
                     }
                     match &unparsed_entry[1] {
                         JsonValue::String(word) => entry.1 = Word::new(word),
                         JsonValue::Short(word) => entry.1 = Word::new(word.as_str()),
-                        JsonValue::Array(unparsed_words) => todo!(),
+                        JsonValue::Array(unparsed_words) => {
+                            let mut words = Vec::new();
+                            for unparsed_work in unparsed_words {
+                                match unparsed_work {
+                                    JsonValue::String(word) => words.push(word.as_str()),
+                                    JsonValue::Short(word) => words.push(word.as_str()),
+                                    _ => return Err(json::Error::UnexpectedEndOfJson),
+                                }
+                            }
+                            let words: Vec<String> =
+                                words.iter().map(|word| (*word).to_string()).collect();
+                            entry.1 = Word::new_list(words);
+                        }
                         _ => return Err(json::Error::UnexpectedEndOfJson),
-                        // _ => entry.1 = Word::default(),
                     }
                     match &unparsed_entry[2] {
                         JsonValue::String(gram_class) => entry.2 = gram_class.into(),
                         JsonValue::Short(gram_class) => entry.2 = gram_class.as_str().into(),
                         _ => return Err(json::Error::UnexpectedEndOfJson),
-                        // _ => entry.2 = GramClass::default(),
                     }
                     list.push(entry);
                 }
@@ -163,8 +183,12 @@ mod tests {
             "{
     \"lang\": [\"english\", \"french\"],
     \"list\": [
-            [\"beauty\", \"beauté\", \"noun\"],
-            [\"fashion\", \"mode\", \"noun\"]
+            [\"yes\", \"oui\", \"adv\"],
+            [\"no\", \"non\", \"adverb\"],
+            [\"the work\", \"le travail\", \"noun\"],
+            [\"the rust\", \"la rouille\", \"noun\"],
+            [\"the solution\", \"la solution\", \"noun\"],
+            [\"to rise\", [\"s'élever\", \"monter\"], \"verb\"]
     ]
 } ",
         );
@@ -173,16 +197,12 @@ mod tests {
         let truth = (
             [Lang::English, Lang::French],
             vec![
-                Entry(
-                    Word::One("beauty".into()),
-                    Word::One("beauté".into()),
-                    GramClass::Noun,
-                ),
-                Entry(
-                    Word::One("fashion".into()),
-                    Word::One("mode".into()),
-                    GramClass::Noun,
-                ),
+                Entry("yes".into(), "oui".into(), GramClass::Adverb),
+                Entry("no".into(), "non".into(), GramClass::Adverb),
+                Entry("the work".into(), "le travail".into(), GramClass::Noun),
+                Entry("the rust".into(), "la rouille".into(), GramClass::Noun),
+                Entry("the solution".into(), "la solution".into(), GramClass::Noun),
+                Entry("to rise".into(), Word::new_list(vec!["s'élever".into(), "monter".into()]), GramClass::Verb),
             ],
         );
         assert_eq!(parsed, truth);
