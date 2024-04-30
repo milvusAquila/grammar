@@ -23,10 +23,10 @@ impl Entry {
             Word::One(content) => content.to_string(),
             Word::List(content) => {
                 let mut formatted = String::new();
-                for i in &content[..content.len() - 1] {
+                for i in &content[..content.len() - 2] {
                     formatted += format!("{} / ", i).as_str();
                 }
-                formatted += content[content.len()].as_str();
+                formatted += content[content.len() - 1].as_str();
                 formatted
             }
         }
