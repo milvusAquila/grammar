@@ -74,9 +74,9 @@ impl<'a> Into<&'a str> for Lang {
 impl From<&str> for Lang {
     fn from(value: &str) -> Self {
         match value {
-            "English" | "english" => Self::English,
-            "German" | "Deutsch" | "german" | "deutsch" => Self::German,
-            "French" | "Français" | "french" | "français" | "Francais" | "francais" => {
+            "English" | "english" | "en_US" | "en_GB" => Self::English,
+            "German" | "Deutsch" | "german" | "deutsch" | "de_DE" => Self::German,
+            "French" | "Français" | "french" | "français" | "Francais" | "francais" | "fr_FR" => {
                 Self::French
             }
             _ => Self::Other,
@@ -158,7 +158,7 @@ fn parse_word(raw: &JsonValue) -> Result<Word, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{fs, path::PathBuf};
+    use std::fs;
 
     #[test]
     fn entry_test() {
@@ -205,7 +205,9 @@ mod tests {
     }
     #[test]
     fn read_file_test() {
-        let contents = fs::read_to_string(PathBuf::from("assets/english.json")).unwrap();
-        let _ = parse(&contents).unwrap();
+        for i in fs::read_dir("assets").unwrap() {
+            let contents = fs::read_to_string(i.unwrap().path()).unwrap();
+            parse(&contents).unwrap();
+        }
     }
 }

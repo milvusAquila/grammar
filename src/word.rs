@@ -52,8 +52,8 @@ impl Into<GramClass> for &str {
     fn into(self) -> GramClass {
         match self {
             "Adverb" | "adverb" | "Adv" | "adv" | "Adverbe" | "adverbe" => GramClass::Adverb,
-            "Noun" | "noun" | "Nom" | "nom" => GramClass::Noun,
-            "Verb" | "verb" | "Verbe" | "verbe" => GramClass::Verb,
+            "Noun" | "noun" | "Nom" | "nom" | "n" => GramClass::Noun,
+            "Verb" | "verb" | "Verbe" | "verbe" | "v" => GramClass::Verb,
             _ => GramClass::Other,
         }
     }
