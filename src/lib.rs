@@ -16,13 +16,17 @@ impl Entry {
             1 => &self.1,
             _ => panic!("Unavailable index"),
         };
-        let mut string = String::new();
-        for i in &word.base[..(&word.base.len() - 2)] {
-            string += format!("{} / ", i).as_str();
+        if word.base.len() >= 2 {
+            let mut string = String::new();
+            for i in &word.base[..(&word.base.len() - 2)] {
+                string += format!("{} / ", i).as_str();
+            }
+            string += &word.base[&word.base.len() - 1].as_str();
+            string += &word.desc.as_str();
+            string
+        } else {
+            format!("{}", &word.base[0])
         }
-        string += &word.base[&word.base.len() - 1].as_str();
-        string += &word.desc.as_str();
-        string
     }
     pub fn correct(&self, answer: &String, element: usize, lang: &Lang) -> f32 {
         let word = match element {
@@ -33,7 +37,7 @@ impl Entry {
         match *lang {
             Lang::Other if word.base.contains(answer) => 1.,
             Lang::English => english::correct(word, answer, &self.2),
-            _ => 0.
+            _ => 0.,
         }
     }
 }
