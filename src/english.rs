@@ -5,14 +5,12 @@ use crate::{GramClass, Word};
 pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
     word.base
         .iter()
-        .map(|i| {
-            println!("'{}' '{}' '{}'", i, &i[3..], answer);
-            match gram_class {
+        .map(|i| match gram_class {
             GramClass::Verb if answer == i || (&i[..3] == "to " && answer == &i[3..]) => 1.,
             GramClass::Noun if answer == i || (&i[..4] == "the " && answer == &i[4..]) => 1.,
             GramClass::Noun if &i[..2] == "a " && (answer == i || answer == &i[..2]) => 1.,
             _ => 0.,
-        } })
+        })
         // .fold(0.0f32, |max, &val| if val > max { val } else { max })
         .map(NotNan::new)
         .flatten()
