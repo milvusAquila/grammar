@@ -1,41 +1,54 @@
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Word {
-    One(String),
-    List(Vec<String>),
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+pub struct Word {
+    pub base: Vec<String>,
+    pub desc: String, // between [] in json, dislpay to give context
 }
 
 impl Word {
     pub fn new(one: impl Into<String>) -> self::Word {
-        Word::One(one.into())
+        Word {
+            base: vec![one.into()],
+            ..Default::default()
+        }
     }
     pub fn new_list(list: impl Into<Vec<String>>) -> self::Word {
-        Word::List(list.into())
+        Word {
+            base: list.into(),
+            ..Default::default()
+        }
     }
 }
 
-impl Default for Word {
-    fn default() -> Self {
-        Word::One(String::default())
-    }
-}
 impl Into<Word> for &str {
     fn into(self) -> Word {
-        Word::One(String::from(self))
+        Word {
+            base: vec![self.into()],
+            ..Default::default()
+        }
     }
 }
 impl Into<Word> for String {
     fn into(self) -> Word {
-        Word::One(self)
+        Word {
+            base: vec![self.into()],
+            ..Default::default()
+        }
     }
 }
 impl Into<Word> for Vec<&str> {
     fn into(self) -> Word {
-        Word::List(self.iter().map(|word| String::from(*word)).collect())
+        Word {
+            base: self.iter().map(|word| String::from(*word)).collect(),
+            ..Default::default()
+        }
     }
 }
 impl Into<Word> for Vec<String> {
     fn into(self) -> Word {
-        Word::List(self)
+        Word {
+            base: self,
+            ..Default::default()
+        }
     }
 }
 

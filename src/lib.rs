@@ -1,53 +1,39 @@
-use json::{Error, JsonValue};
+use json::JsonValue;
 
 pub mod word;
 pub use word::*;
 pub mod english;
 pub mod french;
 pub mod german;
-// pub use english;
-// pub use french;
-// pub use german;
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Entry(pub Word, pub Word, pub GramClass);
 
 impl Entry {
-    pub fn get(&self, lang: usize) -> String {
-        let word = match lang {
+    pub fn get(&self, element: usize) -> String {
+        let word = match element {
             0 => &self.0,
             1 => &self.1,
             _ => panic!("Unavailable index"),
         };
-        match word {
-            Word::One(content) => content.to_string(),
-            Word::List(content) => {
-                let mut formatted = String::new();
-                for i in &content[..content.len() - 2] {
-                    formatted += format!("{} / ", i).as_str();
-                }
-                formatted += content[content.len() - 1].as_str();
-                formatted
-            }
+        let mut string = String::new();
+        for i in &word.base[..(&word.base.len() - 2)] {
+            string += format!("{} / ", i).as_str();
         }
+        string += &word.base[&word.base.len() - 1].as_str();
+        string += &word.desc.as_str();
+        string
     }
-    pub fn correct(&self, answer: &String) -> f32 {
-        // TODO: add some grammar tolerences (`to` or not before verb)
-        match &self.0 {
-            Word::One(word) => {
-                if word == answer {
-                    1.
-                } else {
-                    0.
-                }
-            }
-            Word::List(words) => {
-                if words.contains(answer) {
-                    1.
-                } else {
-                    0.
-                }
-            }
+    pub fn correct(&self, answer: &String, element: usize, lang: &Lang) -> f32 {
+        let word = match element {
+            0 => &self.0,
+            1 => &self.1,
+            _ => panic!("Unavailable index"),
+        };
+        match *lang {
+            Lang::Other if word.base.contains(answer) => 1.,
+            Lang::English => english::correct(word, answer, &self.2),
+            _ => 0.
         }
     }
 }
@@ -95,7 +81,7 @@ impl std::fmt::Display for Lang {
     }
 }
 
-pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), Error> {
+pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), GramErr> {
     match json::parse(raw.as_str()) {
         Ok(data) if data["lang"].len() == 2 && data["list"].is_array() => {
             let lang1: Lang = data["lang"][0].as_str().unwrap_or("").into();
@@ -106,53 +92,61 @@ pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), Error> {
                 for unparsed_entry in unparsed_list {
                     match parse_entry(unparsed_entry) {
                         Ok(entry) => list.push(entry),
-                        Err(_) => return Err(Error::UnexpectedEndOfJson),
+                        Err(_) => return Err(GramErr::LangErr),
                     }
                 }
             }
             Ok(([lang1, lang2], list))
         }
-        Err(err) => Err(err),
-        _ => Err(Error::UnexpectedEndOfJson),
+        Err(_) => Err(GramErr::Unknown),
+        _ => Err(GramErr::LangErr),
     }
 }
 
-fn parse_entry(raw: &JsonValue) -> Result<Entry, Error> {
+fn parse_entry(raw: &JsonValue) -> Result<Entry, GramErr> {
     let mut entry = Entry::default();
     match parse_word(&raw[0]) {
         Ok(word) => entry.0 = word,
-        Err(_) => return Err(Error::UnexpectedEndOfJson),
+        Err(_) => return Err(GramErr::JsonErr),
     }
     match parse_word(&raw[1]) {
         Ok(word) => entry.1 = word,
-        Err(_) => return Err(Error::UnexpectedEndOfJson),
+        Err(_) => return Err(GramErr::JsonErr),
     }
     match &raw[2] {
+        JsonValue::Null => entry.2 = GramClass::default(),
         JsonValue::String(gram_class) => entry.2 = gram_class.into(),
         JsonValue::Short(gram_class) => entry.2 = gram_class.as_str().into(),
-        _ => return Err(Error::UnexpectedEndOfJson),
+        _ => return Err(GramErr::JsonErr),
     }
     Ok(entry)
 }
-fn parse_word(raw: &JsonValue) -> Result<Word, Error> {
+fn parse_word(raw: &JsonValue) -> Result<Word, GramErr> {
     match &raw {
         JsonValue::String(word) => Ok(Word::new(word)),
         JsonValue::Short(word) => Ok(Word::new(word.as_str())),
         JsonValue::Array(unparsed_words) => {
             let mut words = Vec::new();
-            for unparsed_work in unparsed_words {
-                match unparsed_work {
+            for unparsed_word in unparsed_words {
+                match unparsed_word {
                     JsonValue::String(word) => words.push(word.as_str()),
                     JsonValue::Short(word) => words.push(word.as_str()),
-                    // _ => return Err(Error::UnexpectedEndOfJson),
-                    _ => words.push(""),
+                    _ => return Err(GramErr::JsonErr),
+                    // _ => words.push(""),
                 }
             }
             let words: Vec<String> = words.iter().map(|word| (*word).to_string()).collect();
             Ok(Word::new_list(words))
         }
-        _ => return Err(Error::UnexpectedEndOfJson),
+        _ => return Err(GramErr::JsonErr),
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GramErr {
+    JsonErr,
+    LangErr,
+    Unknown,
 }
 
 #[cfg(test)]
@@ -167,7 +161,10 @@ mod tests {
             Word::new("la solution"),
             GramClass::Noun,
         );
-        assert_eq!(entry.correct(&String::from("the solution")), 1.0);
+        assert_eq!(
+            entry.correct(&String::from("the solution"), 0, &Lang::English),
+            1.
+        );
     }
     #[test]
     fn parse_test() {
