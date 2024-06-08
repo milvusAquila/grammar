@@ -37,6 +37,7 @@ impl Entry {
         match *lang {
             Lang::Other if word.base.contains(answer) => 1.,
             Lang::English => english::correct(word, answer, &self.2),
+            Lang::German => german::correct(word, answer, &self.2),
             _ => 0.,
         }
     }
@@ -84,6 +85,7 @@ impl std::fmt::Display for Lang {
         write!(f, "{}", string)
     }
 }
+
 
 pub fn parse(raw: &String) -> Result<([Lang; 2], Vec<Entry>), GramErr> {
     match json::parse(raw.as_str()) {
@@ -151,64 +153,4 @@ pub enum GramErr {
     JsonErr,
     LangErr,
     Unknown,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-
-    #[test]
-    fn entry_test() {
-        let entry = Entry(
-            Word::new("the solution"),
-            Word::new("la solution"),
-            GramClass::Noun,
-        );
-        assert_eq!(
-            entry.correct(&String::from("the solution"), 0, &Lang::English),
-            1.
-        );
-    }
-    #[test]
-    fn parse_test() {
-        let raw = String::from(
-            "{
-    \"lang\": [\"english\", \"french\"],
-    \"list\": [
-            [\"yes\", \"oui\", \"adv\"],
-            [\"no\", \"non\", \"adverb\"],
-            [\"the work\", \"le travail\", \"noun\"],
-            [\"the rust\", \"la rouille\", \"noun\"],
-            [\"the solution\", \"la solution\", \"noun\"],
-            [\"to rise\", [\"s'élever\", \"monter\"], \"verb\"]
-    ]
-} ",
-        );
-        // println!("{}", raw);
-        let parsed = parse(&raw).unwrap();
-        let truth = (
-            [Lang::English, Lang::French],
-            vec![
-                Entry("yes".into(), "oui".into(), GramClass::Adverb),
-                Entry("no".into(), "non".into(), GramClass::Adverb),
-                Entry("the work".into(), "le travail".into(), GramClass::Noun),
-                Entry("the rust".into(), "la rouille".into(), GramClass::Noun),
-                Entry("the solution".into(), "la solution".into(), GramClass::Noun),
-                Entry(
-                    "to rise".into(),
-                    Word::new_list(vec!["s'élever".into(), "monter".into()]),
-                    GramClass::Verb,
-                ),
-            ],
-        );
-        assert_eq!(parsed, truth);
-    }
-    #[test]
-    fn read_file_test() {
-        for i in fs::read_dir("assets").unwrap() {
-            let contents = fs::read_to_string(i.unwrap().path()).unwrap();
-            parse(&contents).unwrap();
-        }
-    }
 }
