@@ -49,8 +49,13 @@ fn parse_test() {
 }
 #[test]
 fn read_file_test() {
-    for i in fs::read_dir("assets").unwrap() {
+    for i in fs::read_dir("assets").expect("Failed to open assets files (should be in /assets/*)") {
         let contents = fs::read_to_string(i.unwrap().path()).unwrap();
-        parse(&contents).unwrap();
+        let (langs, database) = parse(&contents).unwrap();
+        for i in database {
+            for j in &i.0.base {
+                i.correct(&j, 1, &langs[0]);
+            }
+        }
     }
 }

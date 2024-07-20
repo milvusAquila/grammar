@@ -1,7 +1,7 @@
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Word {
     pub base: Vec<String>,
-    pub desc: String, // between [] in json, dislpay to give context
+    pub desc: String, // between [] in json, display to give context
 }
 
 impl Word {
@@ -31,6 +31,22 @@ impl Into<Word> for String {
     fn into(self) -> Word {
         Word {
             base: vec![self.into()],
+            ..Default::default()
+        }
+    }
+}
+impl Into<Word> for &String {
+    fn into(self) -> Word {
+        Word {
+            base: vec![self.into()],
+            ..Default::default()
+        }
+    }
+}
+impl Into<Word> for &json::short::Short {
+    fn into(self) -> Word {
+        Word {
+            base: vec![self.as_str().into()],
             ..Default::default()
         }
     }

@@ -127,10 +127,11 @@ fn parse_entry(raw: &JsonValue) -> Result<Entry, GramErr> {
     }
     Ok(entry)
 }
+
 fn parse_word(raw: &JsonValue) -> Result<Word, GramErr> {
     match &raw {
-        JsonValue::String(word) => Ok(Word::new(word)),
-        JsonValue::Short(word) => Ok(Word::new(word.as_str())),
+        JsonValue::String(word) => Ok(word.into()),
+        JsonValue::Short(word) => Ok(word.into()),
         JsonValue::Array(unparsed_words) => {
             let mut words = Vec::new();
             for unparsed_word in unparsed_words {
