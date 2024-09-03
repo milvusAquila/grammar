@@ -54,7 +54,10 @@ fn read_file_test() {
         let (langs, database) = parse(&contents).unwrap();
         for i in database {
             for j in &i.0.base {
-                i.correct(&j, 1, &langs[0]);
+                assert_eq!(i.correct(&j, 0, &langs[1]), 1.0);
+            }
+            for j in &i.1.base {
+                assert_eq!(i.correct(&j, 1, &langs[0]), 1.0);
             }
         }
     }

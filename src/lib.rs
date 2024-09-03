@@ -37,6 +37,7 @@ impl Entry {
         match *lang {
             Lang::Other if word.base.contains(answer) => 1.,
             Lang::English => english::correct(word, answer, &self.2),
+            Lang::French => french::correct(word, answer, &self.2),
             Lang::German => german::correct(word, answer, &self.2),
             _ => 0.,
         }
