@@ -64,9 +64,9 @@ impl<'a> Into<&'a str> for Lang {
 impl From<&str> for Lang {
     fn from(value: &str) -> Self {
         match value {
-            "English" | "english" | "en_US" | "en_GB" => Self::English,
-            "German" | "Deutsch" | "german" | "deutsch" | "de_DE" => Self::German,
-            "French" | "Français" | "french" | "français" | "Francais" | "francais" | "fr_FR" => {
+            "English" | "english" | "en" | "en_US" | "en_GB" => Self::English,
+            "German" | "Deutsch" | "german" | "deutsch" | "de" | "de_DE" => Self::German,
+            "French" | "Français" | "french" | "français" | "Francais" | "francais" | "fr" | "fr_FR" => {
                 Self::French
             }
             _ => Self::Other,
