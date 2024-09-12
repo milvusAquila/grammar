@@ -9,7 +9,7 @@ pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
         .map(|i| match gram_class {
             _ if i.eq_ignore_ascii_case(answer) => 1.,
             GramClass::Noun => {
-                let mut score = 0.;
+                let mut score = 0.0;
                 if ["der ", "die ", "das "].contains(&&i[..4]) {
                     if answer.len() >= 5 {
                         if (&i[4..]).eq_ignore_ascii_case(&answer[4..]) {
@@ -22,7 +22,7 @@ pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
                 }
                 score
             }
-            _ => 0.,
+            _ => 0.0,
         })
         .fold(0., |max, val| if val > max { val } else { max })
 }
