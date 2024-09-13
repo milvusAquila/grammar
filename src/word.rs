@@ -70,6 +70,7 @@ impl Into<Word> for Vec<String> {
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub enum GramClass {
+    Adjectiv,
     Adverb,
     Noun,
     Verb,
@@ -80,6 +81,7 @@ pub enum GramClass {
 impl Into<GramClass> for &str {
     fn into(self) -> GramClass {
         match self {
+            "Adjectiv" | "adjectiv" | "Adj" | "adj" | "Adjectif" | "adjectif" => GramClass::Adjectiv,
             "Adverb" | "adverb" | "Adv" | "adv" | "Adverbe" | "adverbe" => GramClass::Adverb,
             "Noun" | "noun" | "Nom" | "nom" | "n" => GramClass::Noun,
             "Verb" | "verb" | "Verbe" | "verbe" | "v" => GramClass::Verb,
