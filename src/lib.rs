@@ -23,7 +23,9 @@ impl Entry {
             }
         }
         string += &word.base[&word.base.len() - 1].as_str();
-        string += format!(" [{}]", &word.desc).as_str();
+        if ! word.desc.is_empty() {
+            string += format!(" [{}]", &word.desc).as_str();
+        }
         string
     }
     pub fn correct(&self, answer: &String, element: usize, lang: &Lang) -> f32 {
@@ -66,9 +68,8 @@ impl From<&str> for Lang {
         match value {
             "English" | "english" | "en" | "en_US" | "en_GB" => Self::English,
             "German" | "Deutsch" | "german" | "deutsch" | "de" | "de_DE" => Self::German,
-            "French" | "Français" | "french" | "français" | "Francais" | "francais" | "fr" | "fr_FR" => {
-                Self::French
-            }
+            "French" | "Français" | "french" | "français" | "Francais" | "francais" | "fr"
+            | "fr_FR" => Self::French,
             _ => Self::Other,
         }
     }

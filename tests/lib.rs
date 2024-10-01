@@ -53,6 +53,7 @@ fn read_file_test() {
         let contents = fs::read_to_string(i.unwrap().path()).unwrap();
         let (langs, database) = parse(&contents).unwrap();
         for i in database {
+            println!("{:?}", i);
             for j in &i.0.base {
                 assert_eq!(i.correct(&j, 0, &langs[1]), 1.0);
             }
