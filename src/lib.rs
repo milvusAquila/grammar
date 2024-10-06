@@ -16,13 +16,14 @@ impl Entry {
             1 => &self.1,
             _ => panic!("Unavailable index"),
         };
+        let len = word.base.len();
         let mut string = String::new();
-        if word.base.len() >= 2 {
-            for i in &word.base[..(&word.base.len() - 2)] {
+        if len >= 2 {
+            for i in &word.base[..(&len - 2)] {
                 string += format!("{} / ", i).as_str();
             }
         }
-        string += &word.base[&word.base.len() - 1].as_str();
+        string += &word.base[&len - 1].as_str();
         if ! word.desc.is_empty() {
             string += format!(" [{}]", &word.desc).as_str();
         }
