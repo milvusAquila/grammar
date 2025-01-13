@@ -155,3 +155,16 @@ pub enum GramErr {
     LangErr,
     Unknown,
 }
+
+pub fn smart_options(right: &String, answer: &str, options: Vec<&str>) -> f32 {
+    let size = options[0].len();
+    if options.contains(&&right[..size]) {
+        if (&right[size..]).eq_ignore_ascii_case(answer) {
+            0.5
+        } else if answer.len() >= size + 1 {
+            if (&right[size..]).eq_ignore_ascii_case(&answer[size..]) {
+                0.5
+            } else { 0.0 }
+        } else { 0.0 }
+    } else { 0.0 }
+}

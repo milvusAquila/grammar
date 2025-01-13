@@ -1,4 +1,4 @@
-use crate::{GramClass, Word};
+use crate::{smart_options, GramClass, Word};
 
 pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
     if answer.is_empty() {
@@ -7,20 +7,9 @@ pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
     word.base
         .iter()
         .map(|i| match gram_class {
-            _ if i.eq_ignore_ascii_case(answer) => 1.,
+            _ if i.eq_ignore_ascii_case(answer) => 1.0,
             GramClass::Noun => {
-                let mut score = 0.;
-                if ["le ", "la "].contains(&&i[..3]) {
-                    if answer.len() >= 4 {
-                        if (&i[3..]).eq_ignore_ascii_case(&answer[3..]) {
-                            score = 0.5;
-                        }
-                    }
-                    if (&i[3..]).eq_ignore_ascii_case(answer) {
-                        score = 0.5;
-                    }
-                }
-                score
+                smart_options(i, answer, ["le ", "la "].into())
             }
             _ => 0.,
         })

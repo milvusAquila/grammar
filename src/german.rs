@@ -1,4 +1,4 @@
-use crate::{GramClass, Word};
+use crate::{smart_options, GramClass, Word};
 
 pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
     if answer.is_empty() {
@@ -9,18 +9,10 @@ pub fn correct(word: &Word, answer: &String, gram_class: &GramClass) -> f32 {
         .map(|i| match gram_class {
             _ if i.eq_ignore_ascii_case(answer) => 1.,
             GramClass::Noun => {
-                let mut score = 0.0;
-                if ["der ", "die ", "das "].contains(&&i[..4]) {
-                    if answer.len() >= 5 {
-                        if (&i[4..]).eq_ignore_ascii_case(&answer[4..]) {
-                            score = 0.5;
-                        }
-                    }
-                    if (&i[4..]).eq_ignore_ascii_case(answer) {
-                        score = 0.5;
-                    }
-                }
-                score
+                smart_options(i, answer, ["der ", "die ", "das "].into())
+            }
+            GramClass::Verb => {
+                smart_options(i, answer, ["jdn ", "jdm "].into())
             }
             _ => 0.0,
         })
