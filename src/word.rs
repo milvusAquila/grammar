@@ -21,6 +21,20 @@ impl Word {
     }
 }
 
+impl std::fmt::Display for Word {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let len = self.base.len();
+        let mut string = String::new();
+        if len >= 2 {
+            for i in &self.base[..(len - 1)] {
+                string += format!("{} / ", i).as_str();
+            }
+        }
+        string += &self.base[&len - 1].as_str();
+        write!(f, "{}", string)
+    }
+}
+
 impl Into<Word> for &str {
     fn into(self) -> Word {
         Word {

@@ -16,17 +16,11 @@ impl Entry {
             1 => &self.1,
             _ => panic!("Unavailable index"),
         };
-        let len = word.base.len();
-        let mut string = String::new();
-        if len >= 2 {
-            for i in &word.base[..(&len - 2)] {
-                string += format!("{} / ", i).as_str();
-            }
-        }
-        string += &word.base[&len - 1].as_str();
-        if ! word.desc.is_empty() {
-            string += format!(" [{}]", &word.desc).as_str();
-        }
+        let string = if word.desc.is_empty() {
+            format!("{}", word)
+        } else {
+            format!("{} [{}]", word, &word.desc)
+        };
         string
     }
     pub fn correct(&self, answer: &String, element: usize, lang: &Lang) -> f32 {
@@ -42,6 +36,12 @@ impl Entry {
             Lang::German => german::correct(word, answer, &self.2),
             _ => 0.,
         }
+    }
+}
+
+impl std::fmt::Display for Entry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} = {}", &self.0, &self.1)
     }
 }
 
