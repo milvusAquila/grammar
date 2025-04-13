@@ -16,12 +16,11 @@ impl Entry {
             1 => &self.1,
             _ => panic!("Unavailable index"),
         };
-        let string = if word.desc.is_empty() {
+        if word.desc.is_empty() {
             format!("{}", word)
         } else {
             format!("{} [{}]", word, &word.desc)
-        };
-        string
+        }
     }
     pub fn correct(&self, answer: &String, element: usize, lang: &Lang) -> f32 {
         let word = match element {
